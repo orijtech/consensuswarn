@@ -1,0 +1,33 @@
+name: 'Statediff'
+description: 'Detect state code changes in pull requests'
+inputs:
+  github-token:
+    description: The GitHub token used to create an authenticated client
+    default: ${{ github.token }}
+    required: false
+  api_url:
+    description: The GitHub API URL
+    default: ${{ github.api_url }}
+  repository:
+    description: The GitHub repository
+    default: ${{ github.repository }}
+  pr-number:
+    description: The PR number to analyze
+    default: ${{ github.event.pull_request.number }}
+  roots:
+    description: 'The comma-separated list of function or method roots'
+    required: true
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - "-ghtoken"
+    - ${{ inputs.github-token }}
+    - "-apiurl"
+    - ${{ inputs.api_url }}
+    - "-repository"
+    - ${{ inputs.repository }}
+    - "-pr"
+    - ${{ inputs.pr-number }}
+    - "-roots"
+    - ${{ inputs.roots }}

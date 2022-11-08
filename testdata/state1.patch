@@ -1,0 +1,112 @@
+diff --git testdata/state.go testdata/state.go
+index 12d8004..2840358 100644
+--- testdata/state.go
++++ testdata/state.go
+@@ -14,6 +14,7 @@ Space the separate hunks
+ 
+ */
+ func StateFunc1() {
++	println("state function change")
+ }
+ 
+ /*
+@@ -28,6 +29,7 @@ Space to separate hunks.
+ 
+ */
+ func NonStateFunc1() {
++	println("not a state change")
+ }
+ 
+ /*
+@@ -44,6 +46,7 @@ func (t *T) RootMethod1() {
+ }
+ 
+ func (t *T) StateMethod1() {
++	println("state method change")
+ }
+ 
+ /*
+@@ -56,4 +59,5 @@ More space.
+ 
+ */
+ func (*T) NonStateMethod1() {
++	println("not a state change")
+ }
+diff --git testdata/state1.patch testdata/state1.patch
+index ed51c52..e69de29 100644
+--- testdata/state1.patch
++++ testdata/state1.patch
+@@ -1,73 +0,0 @@
+-diff --git testdata/state.go testdata/state.go
+-index 12d8004..2840358 100644
+---- testdata/state.go
+-+++ testdata/state.go
+-@@ -14,6 +14,7 @@ Space the separate hunks
+- 
+- */
+- func StateFunc1() {
+-+	println("state function change")
+- }
+- 
+- /*
+-@@ -28,6 +29,7 @@ Space to separate hunks.
+- 
+- */
+- func NonStateFunc1() {
+-+	println("not a state change")
+- }
+- 
+- /*
+-@@ -44,6 +46,7 @@ func (t *T) RootMethod1() {
+- }
+- 
+- func (t *T) StateMethod1() {
+-+	println("state method change")
+- }
+- 
+- /*
+-@@ -56,4 +59,5 @@ More space.
+- 
+- */
+- func (*T) NonStateMethod1() {
+-+	println("not a state change")
+- }
+-diff --git testdata/state1.patch testdata/state1.patch
+-index 2bde7cf..e69de29 100644
+---- testdata/state1.patch
+-+++ testdata/state1.patch
+-@@ -1,34 +0,0 @@
+--diff --git testdata/state.go testdata/state.go
+--index 41d2da9..967931a 100644
+----- testdata/state.go
+--+++ testdata/state.go
+--@@ -5,6 +5,7 @@ func RootFunc1() {
+-- }
+-- 
+-- func StateFunc1() {
+--+	println("state function change")
+-- }
+-- 
+-- /*
+--@@ -19,6 +20,7 @@ Space to separate hunks.
+-- 
+-- */
+-- func NonStateFunc1() {
+--+	println("not a state change")
+-- }
+-- 
+-- /*
+--@@ -35,6 +37,7 @@ func (t *T) RootMethod1() {
+-- }
+-- 
+-- func (t *T) StateMethod1() {
+--+	println("state method change")
+-- }
+-- 
+-- /*
+--@@ -47,4 +50,5 @@ More space.
+-- 
+-- */
+-- func (*T) NonStateMethod1() {
+--+	println("not a state change")
+-- }
