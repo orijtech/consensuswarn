@@ -41,6 +41,7 @@ func main() {
 	}
 }
 
+// Error reported when one or more patch hunks touch state code.
 var errStatePatch = errors.New("patch edits state code")
 
 // rootFunction is a representation of a method such as
