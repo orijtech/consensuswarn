@@ -1,0 +1,20 @@
+name: "Warn on state changes"
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - synchronize
+
+permissions:
+  contents: read
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: orijtech/statediff@main
+        with:
+          pull_request_url: "https://google.com"

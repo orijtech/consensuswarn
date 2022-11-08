@@ -1,0 +1,11 @@
+name: 'Statediff'
+description: 'Detect state code changes in pull requests'
+inputs:
+  pull_request_url:
+    description: 'The URL of the pull request or patch'
+    required: true
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.pull_request_url }}
