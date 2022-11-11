@@ -14,6 +14,7 @@ Space the separate hunks
 
 */
 func StateFunc1() {
+	println("state change!2")
 }
 
 /*
