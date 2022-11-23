@@ -204,7 +204,7 @@ func (p Patch) Mark(stack []stackEntry, file string, startLine, endLine int) {
 		}
 		// Record the stack, but only if it is shorter than any previous stack.
 		if len(p[i].stack) == 0 || len(p[i].stack) > len(stack) {
-			p[i].stack = append(p[i].stack[0:], stack...)
+			p[i].stack = append(p[i].stack[:0], stack...)
 		}
 	}
 }
