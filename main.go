@@ -51,9 +51,12 @@ func main() {
 	*dir, _ = filepath.Abs(*dir)
 
 	ctx := context.Background()
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: *ghtoken},
-	)
+	var ts oauth2.TokenSource
+	if *ghtoken != "" {
+		ts = oauth2.StaticTokenSource(
+			&oauth2.Token{AccessToken: *ghtoken},
+		)
+	}
 	tc := oauth2.NewClient(ctx, ts)
 	gh := github.NewClient(tc)
 	split := strings.SplitN(*repository, "/", 2)
