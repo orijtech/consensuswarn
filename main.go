@@ -50,6 +50,10 @@ func main() {
 	}
 	*dir, _ = filepath.Abs(*dir)
 
+	// TODO: Undo and use the Github checks API or comment directly on affected code lines.
+	// Please visit issue https://github.com/orijtech/statediff/issues/3
+	return
+
 	ctx := context.Background()
 	var ts oauth2.TokenSource
 	if *ghtoken != "" {
@@ -89,6 +93,7 @@ func main() {
 	if len(hunks) == 0 {
 		os.Exit(0)
 	}
+
 	comment := new(bytes.Buffer)
 	fmt.Fprintf(comment, "%s\n\nCallstacks:\n", commentTitle)
 	for _, hunk := range hunks {
