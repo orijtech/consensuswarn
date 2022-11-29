@@ -111,14 +111,22 @@ func main() {
 }
 
 func hasComment(ctx context.Context, gh *github.Client, owner, repo string) (bool, error) {
-	comments, _, err := gh.Issues.ListComments(ctx, owner, repo, *prnum, nil)
-	if err != nil {
-		return false, err
-	}
-	for _, comment := range comments {
-		if strings.Contains(comment.GetBody(), commentTitle) {
-			return true, nil
+	page := 0
+	for {
+		opt := &github.IssueListCommentsOptions{ListOptions: github.ListOptions{Page: page}}
+		comments, resp, err := gh.Issues.ListComments(ctx, owner, repo, *prnum, opt)
+		if err != nil {
+			return false, err
 		}
+		for _, comment := range comments {
+			if strings.Contains(comment.GetBody(), commentTitle) {
+				return true, nil
+			}
+		}
+		if resp.NextPage == 0 {
+			break
+		}
+		page = resp.NextPage
 	}
 	return false, nil
 }
