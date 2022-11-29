@@ -14,6 +14,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"go/token"
@@ -36,7 +37,7 @@ var (
 	rootNames  = stringSlice{}
 )
 
-const commentTitle = "PR potentially affects state code."
+const commentTitle = "Change potentially affects state."
 
 func init() {
 	flag.Var(&rootNames, "roots", "comma-separated list of root functions")
@@ -61,7 +62,7 @@ func main() {
 	gh := github.NewClient(tc)
 	split := strings.SplitN(*repository, "/", 2)
 	owner, repo := split[0], split[1]
-	pr, patch, err := getPatch(ctx, gh, owner, repo)
+	pr, patch, err := getDiff(ctx, gh, owner, repo)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "statediff: %v\n", err)
 		os.Exit(2)
@@ -86,12 +87,19 @@ func main() {
 		fmt.Fprintf(os.Stderr, "statediff: %v\n", err)
 		os.Exit(2)
 	}
-	if len(hunks) == 0 {
-		os.Exit(0)
+	comments, err := getReviewComments(ctx, gh, owner, repo)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "statediff: %v\n", err)
+		os.Exit(2)
 	}
-	comment := new(bytes.Buffer)
-	fmt.Fprintf(comment, "%s\n\nCallstacks:\n", commentTitle)
 	for _, hunk := range hunks {
+		path := hunk.relFile
+		line := int(hunk.hunk.OrigStartLine + hunk.hunk.OrigLines)
+		if comments[commentKey{path, line}] {
+			continue
+		}
+		comment := new(bytes.Buffer)
+		fmt.Fprintf(comment, "%s\n\nCall sequence:\n", commentTitle)
 		fmt.Fprintf(comment, "```\n")
 		for i := len(hunk.stack) - 1; i >= 0; i-- {
 			e := hunk.stack[i]
@@ -99,15 +107,46 @@ func main() {
 			fmt.Fprintf(comment, "%s (%s:%d)\n", e.fun.FullName(), hunk.relFile, pos.Line)
 		}
 		fmt.Fprintf(comment, "```\n")
+		err := postReviewComment(ctx, gh, owner, repo, &reviewComment{
+			CommitID:  *pr.Head.SHA,
+			StartLine: int(hunk.hunk.OrigStartLine),
+			Line:      line,
+			Path:      path,
+			Body:      comment.String(),
+		})
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "statediff: %v\n", err)
+			os.Exit(2)
+		}
 	}
-	commentStr := comment.String()
-	_, _, err = gh.Issues.CreateComment(ctx, owner, repo, *prnum, &github.IssueComment{
-		Body: &commentStr,
-	})
+}
+
+type reviewComment struct {
+	CommitID  string `json:"commit_id"`
+	StartLine int    `json:"start_line"`
+	Line      int    `json:"line"`
+	Path      string `json:"path"`
+	Body      string `json:"body"`
+}
+
+type commentKey struct {
+	Path string
+	Line int
+}
+
+func postReviewComment(ctx context.Context, gh *github.Client, owner, repo string, comment *reviewComment) error {
+	url := fmt.Sprintf("%srepos/%s/%s/pulls/%d/comments", gh.BaseURL, owner, repo, *prnum)
+	body, err := json.Marshal(comment)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "statediff: %v\n", err)
-		os.Exit(2)
+		return err
 	}
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(body))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Accept", "application/vnd.github+json")
+	_, err = gh.Do(ctx, req, nil)
+	return err
 }
 
 func hasComment(ctx context.Context, gh *github.Client, owner, repo string) (bool, error) {
@@ -131,7 +170,35 @@ func hasComment(ctx context.Context, gh *github.Client, owner, repo string) (boo
 	return false, nil
 }
 
-func getPatch(ctx context.Context, gh *github.Client, owner, repo string) (*github.PullRequest, *bytes.Buffer, error) {
+func getReviewComments(ctx context.Context, gh *github.Client, owner, repo string) (map[commentKey]bool, error) {
+	commentMap := make(map[commentKey]bool)
+	page := 0
+	for {
+		url := fmt.Sprintf("%srepos/%s/%s/pulls/%d/comments?page=%d", gh.BaseURL, owner, repo, *prnum, page)
+		req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("Accept", "application/vnd.github+json")
+		var comments []reviewComment
+		resp, err := gh.Do(ctx, req, &comments)
+		if err != nil {
+			return nil, err
+		}
+		for _, comment := range comments {
+			if strings.Contains(comment.Body, commentTitle) {
+				commentMap[commentKey{comment.Path, comment.Line}] = true
+			}
+		}
+		if resp.NextPage == 0 {
+			break
+		}
+		page = resp.NextPage
+	}
+	return commentMap, nil
+}
+
+func getDiff(ctx context.Context, gh *github.Client, owner, repo string) (*github.PullRequest, *bytes.Buffer, error) {
 	dur := time.Second
 	retries := 0
 	for {
