@@ -1,4 +1,4 @@
-// Command statediff reports whether a GitHub PR touches a function or method that is potentially called by
+// Command consensuswarn reports whether a GitHub PR touches a function or method that is potentially called by
 // one or more root functions or methods. The PR is loaded through the GitHub API, roots are specified by
 // the `-root` flag. Methods use the form
 //
@@ -46,7 +46,7 @@ func init() {
 func main() {
 	flag.Parse()
 	if *prnum <= 0 {
-		fmt.Fprintf(os.Stderr, "statediff: invalid PR number: %d\n", *prnum)
+		fmt.Fprintf(os.Stderr, "consensuswarn: invalid PR number: %d\n", *prnum)
 		os.Exit(1)
 	}
 	*dir, _ = filepath.Abs(*dir)
@@ -64,32 +64,32 @@ func main() {
 	owner, repo := split[0], split[1]
 	pr, patch, err := getDiff(ctx, gh, owner, repo)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "statediff: %v\n", err)
+		fmt.Fprintf(os.Stderr, "consensuswarn: %v\n", err)
 		os.Exit(2)
 	}
 	notified, err := hasComment(ctx, gh, owner, repo)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "statediff: %v\n", err)
+		fmt.Fprintf(os.Stderr, "consensuswarn: %v\n", err)
 		os.Exit(2)
 	}
 	if notified {
-		fmt.Fprint(os.Stderr, "statediff: ignoring PR because it was already commented\n")
+		fmt.Fprint(os.Stderr, "consensuswarn: ignoring PR because it was already commented\n")
 		os.Exit(0)
 	}
 	if !pr.GetMergeable() {
-		fmt.Fprint(os.Stderr, "statediff: ignoring non-mergeable PR\n")
+		fmt.Fprint(os.Stderr, "consensuswarn: ignoring non-mergeable PR\n")
 		os.Exit(0)
 	}
 
 	fset := new(token.FileSet)
 	hunks, err := runCheck(fset, *dir, patch, rootNames)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "statediff: %v\n", err)
+		fmt.Fprintf(os.Stderr, "consensuswarn: %v\n", err)
 		os.Exit(2)
 	}
 	comments, err := getReviewComments(ctx, gh, owner, repo)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "statediff: %v\n", err)
+		fmt.Fprintf(os.Stderr, "consensuswarn: %v\n", err)
 		os.Exit(2)
 	}
 	for _, hunk := range hunks {
@@ -115,7 +115,7 @@ func main() {
 			Body:      comment.String(),
 		})
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "statediff: %v\n", err)
+			fmt.Fprintf(os.Stderr, "consensuswarn: %v\n", err)
 			os.Exit(2)
 		}
 	}

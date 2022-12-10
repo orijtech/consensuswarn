@@ -5,4 +5,4 @@ RUN cd / && go build
 RUN apk add curl
 
 ENV CGO_ENABLED=0
-ENTRYPOINT ["/statediff"]
+ENTRYPOINT ["/consensuswarn"]

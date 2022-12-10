@@ -1,5 +1,5 @@
-name: 'Statediff'
-description: 'Detect state code changes in pull requests'
+name: 'Consensus Warnings'
+description: 'Detect consensus code changes in pull requests'
 inputs:
   github-token:
     description: The GitHub token used to create an authenticated client

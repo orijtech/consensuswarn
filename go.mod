@@ -1,4 +1,4 @@
-module github.com/orijtech/statediff
+module github.com/orijtech/consensuswarn
 
 go 1.19
 
