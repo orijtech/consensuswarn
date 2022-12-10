@@ -1,6 +1,6 @@
-# Statediff GitHub Action
+# Consensus Warnings GitHub Action
 
-The statediff GitHub action takes a set of Go function and method roots and checks whether the
+The consensuswarn GitHub action takes a set of Go function and method roots and checks whether the
 current PR touches any of the roots, or any function or method directly or indirectly called by
 a root. If so, a comment is posted on the PR with the affected callstacks.
 
@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: orijtech/statediff@main
+      - uses: orijtech/consensuswarn@main
         with:
           roots: 'github.com/cosmos/cosmos-sdk/baseapp.BaseApp.DeliverTx,github.com/cosmos/cosmos-sdk/baseapp.BaseApp.BeginBlock,github.com/cosmos/cosmos-sdk/baseapp.BaseApp.EndBlock,github.com/cosmos/cosmos-sdk/baseapp.BaseApp.Commit'
 ```

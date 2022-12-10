@@ -9,8 +9,8 @@ import (
 
 func TestInvalidRoots(t *testing.T) {
 	invalids := []string{
-		"github.com/orijtech/statediff/testdata.MissingFunc",
-		"github.com/orijtech/statediff/testdata.T.MissingMethod",
+		"github.com/orijtech/consensuswarn/testdata.MissingFunc",
+		"github.com/orijtech/consensuswarn/testdata.T.MissingMethod",
 	}
 	for _, root := range invalids {
 		if _, err := runCheck(new(token.FileSet), "", bytes.NewReader(nil), []string{root}); err == nil {
@@ -19,7 +19,7 @@ func TestInvalidRoots(t *testing.T) {
 	}
 }
 
-func TestStatediff(t *testing.T) {
+func TestPatch(t *testing.T) {
 	patch, err := os.ReadFile("testdata/state1.patch")
 	if err != nil {
 		t.Fatal(err)
@@ -29,8 +29,8 @@ func TestStatediff(t *testing.T) {
 		t.Fatal(err)
 	}
 	roots := []string{
-		"github.com/orijtech/statediff/testdata.RootFunc1",
-		"github.com/orijtech/statediff/testdata.T.RootMethod1",
+		"github.com/orijtech/consensuswarn/testdata.RootFunc1",
+		"github.com/orijtech/consensuswarn/testdata.T.RootMethod1",
 	}
 	fset := new(token.FileSet)
 	hunks, err := runCheck(fset, cwd, bytes.NewReader(patch), roots)
